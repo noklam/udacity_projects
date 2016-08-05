@@ -1,0 +1,308 @@
+---
+title: "P4_project"
+author: "Nok Chan"
+date: "Tuesday, August 02, 2016"
+output:
+  html_document: default
+  html_notebook: default
+---
+========================================================
+### Date Set: Prosper Loan Data Set
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+library(ggplot2)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+data_file='prosperLoanData.csv'
+data=read.csv(data_file)
+print("First 10 variables in the data set:")
+feature=names(data)[1:10]
+feature
+
+
+
+```
+# Questions
+* What people is likely to return debts?
+* What people is unlikely to return debts?
+* What are the factors that affect the loan amount?
+
+# Univariate Plots Section
+
+Lets have a visual check on these feature by making histogram for continous data and bar chart for discrete data
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+library(ggplot2)
+print("Number of Observations:")
+(dim(data)[1])
+print ("Number of Features:" )
+dim(data)[2]
+selected=c("LoanStatus","CreditGrade",  "ProsperScore" ,"ProsperRating..Alpha.","ProsperScore","ListingCategory..numeric.",  "DebtToIncomeRatio" ,"StatedMonthlyIncome" , "IsBorrowerHomeowner" ,"LoanOriginalAmount"  ,"MonthlyLoanPayment", "IncomeRange" ,"LP_NetPrincipalLoss")  
+print("Selected features :")
+df=data[selected];
+head(df);
+summary(df);
+df['ProsperScore_factor']=factor(df$ProsperScore)
+df$LoanStatus=factor(df$LoanStatus,levels=c(levels(df$LoanStatus)[c(3,2,5,6,7,4,1,8:12)]))
+df$ListingCategory..numeric.=factor(df$ListingCategory..numeric.)
+
+
+#
+df$IncomeRange=factor(df$IncomeRange,levels=c(levels(df$IncomeRange)[c(8,1,2,4,5,6,3,7)]))
+
+
+
+plot_bar<-function(field,dataframe){
+      print(ggplot(aes_string(x=field),data=dataframe)+geom_bar()) ### x here is a string, note aes_string is used instead because we can only pass a string to a function.
+     print(summary(dataframe[field]))
+      return}
+plot_hist<-function(field,dataframe){
+      tmp=ggplot(aes_string(x=field),data=dataframe)+geom_histogram()
+      print(tmp)### x here is a string, note aes_string is used instead because we can only pass a string to a function.
+     print(summary(dataframe[field]))
+      return(tmp)}
+
+plot_bar('LoanStatus',df)
+```
+The label is too long to displayed, for detail just refer to the table. Most of the loan are in "Current" state. Roughly about 10% loan are classified as Chargedoff.
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_bar('CreditGrade',df)
+## Since the company has changed the grade policy, this grading system only applicable to data before July 2009,most of the data is unclassified and lets plot the graph without thah bin
+```
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+a=ggplot(aes(x=CreditGrade),data=df)+geom_bar(data=subset(df,CreditGrade!=""))
+print(a)
+```
+
+##NC is unclassified
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_bar('ProsperRating..Alpha.',df)
+```
+Again, a plot should be made removing the unclassified column
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+b=ggplot(aes(x=ProsperRating..Alpha.),data=df)+geom_bar(data=subset(df,ProsperRating..Alpha.!=""))
+print(b)
+```
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_bar('ProsperScore',df)
+```
+The First Thing I notice is that in "ProsperScore", maximum is 11, which in the metadata it said Prosper Score should be range from 1-10. So I want to check is it some kind of typo for single data.
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+print(ggplot(aes(x=ProsperScore),data=df)+geom_bar())
+```
+
+ It is clear that there are 11 bars,
+ I am not sure why the metadata said it range from 1-10, I won't do anything to the data right now, but we should keep it in mind.
+
+ The"ProsperRating" and"ProsperScore" are both grading system with different categories, I don't know why they make 2 grading system, since I don't know the underlying fundamental different. Base on the histogram, I would say this Prosper Score is more useful as it looks like a bell curve and more categories allowed it to make better classifications. I will use ProsperScore for Grading system for the analysis later.
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_bar('ListingCategory..numeric.',df)
+```
+ Most of the people borrow money for 1. debt consoloidation.
+The category of the listing that the borrower selected when posting their listing: 0 - Not Available, 1 - Debt Consolidation, 2 - Home Improvement, 3 - Business, 4 - Personal Loan, 5 - Student Use, 6 - Auto, 7- Other, 8 - Baby&Adoption, 9 - Boat, 10 - Cosmetic Procedure, 11 - Engagement Ring, 12 - Green Loans, 13 - Household Expenses, 14 - Large Purchases, 15 - Medical/Dental, 16 - Motorcycle, 17 - RV, 18 - Taxes, 19 - Vacation, 20 - Wedding Loans
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+category_name=c("0 - Not Available"," 1 - Debt Consolidation", "2 - Home Improvement", "3 - Business", "4 - Personal Loan", "5 - Student Use", "6 - Auto", "7- Other"," 8 - Baby&Adoption", "9 - Boat", "10 - Cosmetic Procedure", "11 - Engagement Ring"," 12 - Green Loans", "13 - Household Expenses"," 14 - Large Purchases", "15 - Medical/Dental"," 16 - Motorcycle", "17 - RV"," 18 - Taxes"," 19 - Vacation"," 20 - Wedding Loans")
+
+plot_hist('DebtToIncomeRatio',df)
+```
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+ggplot(df,aes(x=DebtToIncomeRatio))+geom_histogram()+scale_x_log10()
+```
+ This plot is a little tricky, I add 0.1 for all and do coord_trans(x='log') because 0 exist and the log transformation will fail if not added
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_bar('IsBorrowerHomeowner',df)
+```
+
+ The borrower is about half as homeowner.
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_bar('IncomeRange',df)
+```
+ Most of the borrowers' income lie in 25000-49999 and 50000-74999
+plot_hist('StatedMonthlyIncome',df)
+## A outlier exist, 1750003 which is a lot of money, i think it should be an outlier. At first I thought it is a wrong entry data, but after I remove this data point, I still find a few data point with very large monthly income which is not entirely impossible and I decide to preserve the data. 
+## But we should keep in mind it should be removed if any regression ,variance analysis is needed
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+df$StatedMonthlyIncome[df$StatedMonthlyIncome==max(df$StatedMonthlyIncome,na.rm=TRUE)]=NaN
+plot_hist('StatedMonthlyIncome',df)+scale_x_log10()
+```
+ See the normal distribution of monthly income in a log10 -x scale
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_hist('MonthlyLoanPayment',df)
+plot_hist('LP_NetPrincipalLoss',df)+scale_x_log10()
+```
+ Sum of this field can get a Total Net Pricnciple Loss
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+print("Total Principal Loss:")
+sum(df$LP_NetPrincipalLoss)
+```
+This is one of the most important field, the loan amount.
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+plot_hist('LoanOriginalAmount',df)+scale_x_log10()
+```
+Noted that many stripe exist, although the loan amount can be continous, the loan amount usually be a nice number like "9000","100000" instead of "9570","101000".
+## A table showing a specific Loan amount(ie. 10000) count >1000
+```{r echo=FALSE,, message=FALSE, warning=FALSE}
+table(df$LoanOriginalAmount)[table(df$LoanOriginalAmount)>1000]
+```
+
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+The data contain 113937 observations, 81 variables, which is a intermediate size dataset.
+
+### What is/are the main feature(s) of interest in your dataset?
+Loan Amount,Loan Status
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+  "ProsperScore" ,"ListingCategory..numeric.",  "DebtToIncomeRatio" ,"StatedMonthlyIncome" , "IsBorrowerHomeowner" ,"LoanOriginalAmount"  ,"MonthlyLoanPayment", "IncomeRange" 
+
+
+
+
+
+# Bivariate Plots Section
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box<-function(a,b,c){
+      d=ggplot(aes_string(x=a,y=b),data=c)+geom_boxplot()
+      print(d)
+      return(d)
+}
+
+
+
+
+plot_box('ListingCategory..numeric.','LoanOriginalAmount',df)
+```
+
+The largest median loan amout are for 1 - Debt Consolidation 8 - Baby&Adoption.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box('ProsperScore_factor','LoanOriginalAmount',df)
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+tapply(df$LoanOriginalAmount,df$ProsperScore,summary)
+```
+## A general trend shows that the Loan Amount is linear related to ProsperScore
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box('IsBorrowerHomeowner','LoanOriginalAmount',df)
+```
+A Homeowner has a larger median loan amount.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box("IncomeRange",'LoanOriginalAmount',df)
+```
+A Increase trend of median loan amount with increase of IncomeRange except for 0 IncomeRange
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(ggplot(data=subset(df,DebtToIncomeRatio<10),aes(x=DebtToIncomeRatio,y=LoanOriginalAmount))+geom_point()+geom_smooth())
+```
+Alpha added to improve the graph
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(ggplot(df,aes(x=DebtToIncomeRatio,y=LoanOriginalAmount))+geom_point(alpha=0.01))
+```
+It does not help as the data distribution is right skewed, after adding alpha only the left side on x-axis can be seen.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box('LoanStatus',"ProsperScore",df)+coord_flip()
+```
+This graph shows the ProsperScore doing its jobs. People completed their loan have a larger median score, while those delayed payment have a lower score in median.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box('LoanStatus',"DebtToIncomeRatio",df)+scale_y_log10()+coord_flip()
+```
+This graph show DebtToIncomeRatio does not affect the loan completed of defaulted much, let's take a closer look by zooming x axis
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box('LoanStatus',"DebtToIncomeRatio",df)+scale_y_log10(limits=c(0.1,0.5))+coord_flip()
+```
+It still does not give good information, I will not use it for multivariate analysos
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(ggplot(data=subset(df,df$LoanStatus==c('Completed','Defaulted','Chargedoff')),aes(x=ListingCategory..numeric.,fill=LoanStatus))+geom_bar(position='fill'))
+```
+The label is not clear,9 - Boat 17 - RV,16 - Motorcycle ,11 - Engagement Ringare the categories which have largest percentage of completed loan.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(ggplot(data=subset(df,df$LoanStatus==c('Completed','Defaulted','Chargedoff')),aes(x=IncomeRange,fill=LoanStatus))+geom_bar(position='fill')+coord_flip())
+```
+I would not say very significant founding in this graph, but people who are unemployed and with $0 income range seems to have smaller portion of completed status.
+
+
+
+
+
+
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(RColorBrewer)
+
+ggplot(df,aes(x=ListingCategory..numeric.,y=LoanOriginalAmount,color=IncomeRange))+geom_boxplot()
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box('ListingCategory..numeric.','LoanOriginalAmount',df)+facet_wrap(~IncomeRange)+coord_flip();
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+plot_box('IsBorrowerHomeowner','LoanOriginalAmount',df)+ facet_wrap(~IncomeRange)+coord_flip();
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+print(ggplot(data=subset(data,data$StatedMonthlyIncome<100000),aes(x=IncomeRange,y=LoanOriginalAmount,color=IsBorrowerHomeowner))+geom_boxplot()+coord_flip())
+```
+
+
+
+
+### Plot One
+```{r echo=FALSE,  message=FALSE, warning=FALSE,Plot_One}
+##Fail Code, just for record ##order_list=subset(df$ListingCategory..numeric.,df$LoanStatus=='Completed')
+##order_parameter=(reorder(order_list,-table(order_list)[order_list]))
+print(ggplot(data=subset(df,df$LoanStatus==c('Completed','Defaulted','Chargedoff')),aes(x=ListingCategory..numeric.,fill=LoanStatus))+geom_bar(position='fill')+xlab("Categories")+ylab("Percentage")+scale_x_discrete(labels=category_name)+scale_y_continuous(labels =scales::percent)+coord_flip())
+## 
+
+```
+
+### Description One
+This graph show the relative percentage of the three loan status(Completed,Chargedoff,Defaulted) for each categories, I find RV,Motorcycle,Engagement Ring,Boad are the categories have the largest relative percentage of completed loan. It means these kind of loan are less risky than others
+### Plot Two
+```{r echo=FALSE,  message=FALSE, warning=FALSE,Plot_Two}
+print(ggplot(df,aes(x=ListingCategory..numeric.,LoanOriginalAmount))+geom_boxplot(aes(fill=(ListingCategory..numeric.==1|ListingCategory..numeric.==8)))+theme(legend.position="FALSE")+ggtitle("Original Loan Amount vs Debt Consolidation and Baby&Adoption Categories")+scale_x_discrete(name="Category",labels=category_name)+coord_flip())
+```
+
+##The largest median loan amount are for 1 - Debt Consolidation 8 - Baby&Adoption.
+## Since I have found Listing Category 1,8 have the largest median loan amount, I focus on these 2 category see if income range affect the loan amount
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=subset(df,df$ListingCategory..numeric.==1|df$ListingCategory..numeric.==8),aes(x=ListingCategory..numeric.,y=LoanOriginalAmount,color=IncomeRange))+geom_boxplot()+xlab("Category")+ggtitle("Original Loan Amount vs Debt Consolidation and Baby&Adoption Categories in different IncomeRange")+scale_x_discrete(name="Category",labels=c(category_name[2],category_name[9]))
+
+ggplot(data=subset(df,df$ListingCategory..numeric.==c(1:10)),aes(x=ListingCategory..numeric.,y=LoanOriginalAmount,color=IncomeRange))+geom_boxplot()+facet_wrap(~ListingCategory..numeric.)+xlab("Category")+ggtitle("Original Loan Amount vs Categories in different IncomeRange")+coord_flip()
+```
+
+### Description Two
+## The first graph shows Loan Amount median grow with IncomeRange in these 2 categories, which have the largest median loan amount among all categories. This general trend stay true even in other categories as in the second graph.
+
+### Plot Three
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Plot_Three}
+print(ggplot(data=subset(data,data$StatedMonthlyIncome<100000),aes(x=IncomeRange,y=LoanOriginalAmount,color=IsBorrowerHomeowner))+geom_boxplot()+coord_flip()+ggtitle("Boxplot of LoanOrignalAmount vs Income Range for Homeowner or non-Homeowner"))
+
+```
+
+### Description Three
+Boxplot of LoanOrignalAmount vs Income Range for Homeowner or non-Homeowner,Homeowner have higher loan amount in almost each income range group.
+------
+
+# Reflection
+
+The Prosper Loan data set contain more than 100000 observations for 81 variables which is too much to explore for one project.Therefore, I have pick about 10 variables to explore what factors affect Loan amount. I plan to do a linear regression but I find too much variable and I do not know how should I do regression on categorical data.
+
+Homeowner,income range appears to affect the loan amount significantly.
+I also try to find which categories have the largest portion of completed loan, which I find people loan for Boat ,Recreational vehicles(RV), Motorcycle , Engagement Ring have the highest completed percentage, which are luxury items.
+
+I find extremely hard to decide which variable to choose, I hope there are some guide question and suggested variable, but it is also the real world situation(probably much more data). There are some discontinuity in the data, for example, the grading system change from credit grade to ProsperScore. Since there are so many data, I want to do a machine learning algorithm to selected variable for me, I imagine it is impossible to explore every variable in real life if we get 100,1000 variables. Some of the variables is highly correlated, so the selection process must be very careful, it is time consuming to understand what are the data by reading the metadata and googling.
+
+This is a fairly large data set,sometimes it force my Rstudio to shut down. There are lots to investigate for this dataset. Relations between return and background of customer. Which kind of loan is the most profitable one? We may even do a cluster analysis to see how naturally these loan are seperated.
