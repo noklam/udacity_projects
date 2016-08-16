@@ -1,4 +1,14 @@
 Summary:
+#Data Visualization with D3.js Final Project
+
+### Author : Nok Chan
+### Date: 2016/08/16
+
+This is the final project Data Visualization with D3.js course, which is part of the Udacity Data Analyst Nanodegree.
+
+
+##Summary
+
 This project used the d3.js library to build a boxplot visualization. The data is subseted using R to select the interest 
 
 features and output the dataset file "loandata.csv". The data is read using script written in the index.html 
@@ -12,7 +22,8 @@ Home Owner is another variable that added into the visualization, in all income 
 
 than non- home owner.
 
-Design
+##Design
+
 A box plot is build to show the distribution of loan amount in different subset of variable. Peopple can click the button to 
 
 see loan amount in home owner group in different income range or non- home owner.
@@ -22,9 +33,10 @@ see loan amount in home owner group in different income range or non- home owner
 
 
 
-Reference list:
+##Reference list:
+
 http://bl.ocks.org/jensgrubert/7789216
 https://discussions.udacity.com/t/final-project-boxplot/183468/18
 
-Resource:
+##Resource:
 Prosper Loan Data Set
