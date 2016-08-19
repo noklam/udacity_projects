@@ -7,26 +7,17 @@
 This repository contains project work for Udacity's Data Analyst Nanodegree 2016
 
 ###Courses:
+
 Intro to Descriptive Statistics
-
 Intro to Inferential Statistics
-
 Introduction to Data Anlysis
-
 Data Wrangling with MongoDB
-
 SQL FOR Data Analysis
-
 Introduction to Machine Learning
-
 Intro to Machine Learning
-
 Intro to HTML and CSS
-
 JavaScript Basics
-
 Data Visualization and D3.js
-
 A/B Testing - Online Experiment Design and Analysis , build by Google
 
 ###Projects:
