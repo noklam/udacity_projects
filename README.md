@@ -1,6 +1,7 @@
 #Data Analyst Nanodegree
 ###Created by: Udacity ,Facebook, MongoDB, Zipfian Academy
 
+Learn to clean up messy data, uncover patterns and insights, make predictions using machine learning, and clearly communicate critical findings.
 ## udacity_projects
 
 
