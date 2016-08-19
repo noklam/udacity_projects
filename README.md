@@ -24,9 +24,9 @@ A/B Testing - Online Experiment Design and Analysis , build by Google
 
 Project 0: Analyze Bay Area Bike Share Data
 
-Project 1 - Test a Perceptual Phenomenon
-
-Project 2 - Data Wrangle OpenStreetMaps Data
+Project 1 - Test a Perceptual Phenomenon<br>
+Project 2 - Investigate a Dataset
+Project 3 - Data Wrangle OpenStreetMaps Data
 
 Project 4 - Explore and Summarize Data
 
