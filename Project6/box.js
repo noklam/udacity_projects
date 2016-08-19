@@ -219,7 +219,7 @@ d3.box = function() {
       // to join box ticks pre-transition with whisker ticks post-.
       var whiskerTick = g.selectAll("text.whisker")
           .data(whiskerData || []);
-    if(showLabels == true) {
+    if(showLabels == false) {
       whiskerTick.enter().append("text")
           .attr("class", "whisker")
           .attr("dy", ".3em")
